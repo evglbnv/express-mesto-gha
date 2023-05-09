@@ -48,8 +48,13 @@ module.exports.likeCard = (req, res) => {
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  ).then((card) => res.send({ data: card })).catch((err) => {
-    if (err.name === 'ValidationError') {
+  ).then((card) => {
+    if (!card) {
+      return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Card is not found' });
+    }
+    return res.send({ data: card });
+  }).catch((err) => {
+    if (err.name === 'CastError') {
       return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
     }
     return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
@@ -67,7 +72,7 @@ module.exports.dislikeCard = (req, res) => {
     }
     return res.send({ data: card });
   }).catch((err) => {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError' || err.name === 'ValidationError') {
       return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
     }
     return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
