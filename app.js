@@ -7,12 +7,12 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
+app.use(express.json());
+
 mongoose
   .connect('mongodb://localhost:27017/mestodb')
   .then(() => console.log('Connected'))
   .catch((error) => console.log(`Error during connection ${error}`));
-
-app.use(express.json());
 
 app.use((req, res, next) => {
   req.user = {
