@@ -12,21 +12,16 @@ const User = require('../models/user');
 
 const getUsers = (req, res) => {
   User.find({}).then((users) => res
-    .send(users)
-    .catch(() => res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage })));
+    .send(users))
+    .catch(() => res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage }));
 };
 
 const getUserById = (req, res) => {
   const { id } = req.params;
-  // User.find({ _id: id });
+
   User.findById(id)
     .then((user) => {
       res.send({ data: user });
-      // if (!user) {
-      //   res.status(ERROR_CODE_NOT_FOUND).send({ message: 'User is not found' });
-      // } else {
-      //   res.send(user);
-      // }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -56,9 +51,10 @@ const updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
+    { new: true, runValidators: true },
   ).then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
       }
       if (err.name === 'DocumentNotFoundError') {
@@ -73,6 +69,7 @@ const updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
+    { new: true, runValidators: true },
   ).then((user) => res.send({ data: user })).catch((err) => {
     if (err.name === 'CastError') {
       return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
