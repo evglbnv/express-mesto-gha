@@ -20,6 +20,7 @@ const getUserById = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
+    .orFail()
     .then((user) => {
       res.send({ data: user });
     })
