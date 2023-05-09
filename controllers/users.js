@@ -1,6 +1,3 @@
-/* eslint-disable no-restricted-globals */
-/* eslint-disable no-undef */
-
 const {
   ERROR_CODE_INCORRECT_DATA,
   ERROR_CODE_NOT_FOUND,
