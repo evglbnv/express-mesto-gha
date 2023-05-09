@@ -8,7 +8,6 @@ const {
 } = require('../utils/utils');
 
 module.exports.getCard = (req, res) => {
-  // console.log(req.user._id);
   Card.find({})
     .populate('owner')
     .then((cards) => res.send({ data: cards }))
@@ -22,23 +21,6 @@ module.exports.createCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
-      }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
-    });
-};
-
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail()
-    .then((card) => {
-      res.send({ data: card });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Card is not found' });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
     });
@@ -78,4 +60,21 @@ module.exports.dislikeCard = (req, res) => {
     }
     return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
   });
+};
+
+module.exports.deleteCard = (req, res) => {
+  Card.findByIdAndRemove(req.params.cardId)
+    .orFail()
+    .then((card) => {
+      res.send({ data: card });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Card is not found' });
+      }
+      return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
+    });
 };
