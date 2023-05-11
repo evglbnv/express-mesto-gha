@@ -34,7 +34,7 @@ const getUserById = (req, res) => {
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(201).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect user data' });
@@ -50,9 +50,9 @@ const updateProfile = (req, res) => {
     req.user._id,
     { name, about },
     { new: true, runValidators: true },
-  ).then((user) => res.send({ data: user }))
+  ).orFail().then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
       }
       if (err.name === 'DocumentNotFoundError') {
@@ -68,7 +68,7 @@ const updateAvatar = (req, res) => {
     req.user._id,
     { avatar },
     { new: true, runValidators: true },
-  ).then((user) => res.send({ data: user })).catch((err) => {
+  ).orFail().then((user) => res.send({ data: user })).catch((err) => {
     if (err.name === 'CastError') {
       return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
     }

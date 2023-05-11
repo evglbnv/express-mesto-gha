@@ -17,7 +17,7 @@ module.exports.getCard = (req, res) => {
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
@@ -55,7 +55,7 @@ module.exports.dislikeCard = (req, res) => {
     }
     return res.send({ data: card });
   }).catch((err) => {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect card data' });
     }
     return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
