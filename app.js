@@ -1,7 +1,11 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+require('dotenv').config();
 /* eslint-disable no-console */
 const express = require('express');
 const mongoose = require('mongoose');
 const router = require('./routes/index');
+
+// const { errorHandler } = require('./middlewares/errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -23,6 +27,8 @@ app.use((req, res, next) => {
 });
 
 app.use('/', router);
+
+// app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listen on port ${PORT}`);
