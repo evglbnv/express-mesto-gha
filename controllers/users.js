@@ -55,8 +55,8 @@ const getCurrentUser = (req, res) => {
   User.findById(payload._id)
     .orFail(() => res.status(404)
       .send({ message: 'Пользователь не найден' }))
-      .then((users) => res.send(users))
-      .catch((err) => console.log(err));
+    .then((users) => res.send(users))
+    .catch((err) => console.log(err));
 };
 
 const createUser = (req, res) => {
@@ -107,10 +107,10 @@ const login = (req, res) => {
       }
       const token = jsonwebtoken.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       console.log(JWT_SECRET);
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-        });
+      // res
+      //   .cookie('token', token, {
+      //     httpOnly: true,
+      //   });
       res.send({ user, token });
     }).catch((err) => { res.status(401).send({ message: err.message }); });
 };
