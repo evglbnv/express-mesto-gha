@@ -14,7 +14,7 @@ userRouter.get('/', getUsers);
 
 userRouter.get('/me', getCurrentUser);
 
-userRouter.get('/:id', validationUserId, getUserById);
+userRouter.get('/:userId', getUserById);
 
 userRouter.patch('/me', validationUpdateProfile, updateProfile);
 
