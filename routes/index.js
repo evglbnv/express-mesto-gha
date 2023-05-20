@@ -9,6 +9,7 @@ const { authRouter } = require('./auth');
 
 router.use('/users', auth, userRouter);
 router.use('/cards', auth, cardRouter);
+
 router.use('/', authRouter);
 router.use('/*', (req, res) => {
   res.status(ERROR_CODE_NOT_FOUND).send({ message: '404: Not Found' });

@@ -70,15 +70,13 @@ const createUser = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        return Promise.reject(new AuthenticationError('Неправильные почта или пароль'));
       }
       return user;
     })
-    // eslint-disable-next-line consistent-return
     .then((user) => {
       const matched = bcrypt.compare(password, user.password);
       if (!matched) {

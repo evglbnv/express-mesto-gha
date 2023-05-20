@@ -55,7 +55,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { new: true },
   ).then((card) => {
     if (!card) {
-      return next(new NotFoundError('ID карточки не найдена'))
+      return next(new NotFoundError('ID карточки не найдена'));
     }
     return res.send({ data: card });
   }).catch((err) => {
