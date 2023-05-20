@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const NotFoundError = require('../error/notFoundError');
 const BadRequestError = require('../error/badRequest');
 const ConflictError = require('../error/conflictError');
-const AuthenticationError = require('../error/authenticationerror');
+const AuthenticationError = require('../error/authenticationError');
 
 const User = require('../models/user');
 

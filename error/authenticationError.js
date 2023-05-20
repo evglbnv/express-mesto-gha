@@ -7,4 +7,4 @@ class AuthenticationError extends Error {
   }
 }
 
-module.exports =  AuthenticationError ;
+module.exports = AuthenticationError;
