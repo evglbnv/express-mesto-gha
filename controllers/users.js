@@ -18,11 +18,16 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(new NotFoundError('Такого пользователя не существует'))
+    .orFail()
     .then((user) => {
-      res.send({ data: user });
+      res.send(user);
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        return next(new NotFoundError('Такого пользователя не существует'));
+      }
+      return next(err);
+    });
 };
 
 const getCurrentUser = (req, res, next) => {
