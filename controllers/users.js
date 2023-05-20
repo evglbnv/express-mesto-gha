@@ -17,19 +17,12 @@ const getUsers = (req, res, next) => {
 };
 
 const getUserById = (req, res, next) => {
-  const { id } = req.params;
-
-  User.findById(id)
-    .orFail()
+  User.findById(req.params.userId)
+    .orFail(new NotFoundError('Такого пользователя не существует'))
     .then((user) => {
       res.send({ data: user });
     })
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return next(new NotFoundError('Пользователь с таким Id не найден'));
-      }
-      return next(err);
-    });
+    .catch((err) => next(err));
 };
 
 const getCurrentUser = (req, res, next) => {
