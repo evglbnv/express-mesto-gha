@@ -18,16 +18,17 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail()
+    .orFail(new NotFoundError('Такого пользователя не существует'))
     .then((user) => {
-      res.send(user);
+      res.status(200).send({data: user});
     })
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return next(new NotFoundError('Такого пользователя не существует'));
-      }
-      return next(err);
-    });
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
+      };
+    })
 };
 
 const getCurrentUser = (req, res, next) => {
