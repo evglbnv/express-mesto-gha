@@ -2,22 +2,27 @@ const jsonwebtoken = require('jsonwebtoken');
 
 const { JWT_SECRET } = process.env;
 const bcrypt = require('bcrypt');
-const {
-  ERROR_CODE_INCORRECT_DATA,
-  ERROR_CODE_NOT_FOUND,
-  ERROR_CODE_DEFAULT,
-  defaultErrorMessage,
-} = require('../utils/utils');
+// const {
+//   ERROR_CODE_INCORRECT_DATA,
+//   ERROR_CODE_NOT_FOUND,
+//   ERROR_CODE_DEFAULT,
+//   defaultErrorMessage,
+// } = require('../utils/utils');
+
+const NotFoundError = require('../error/notFoundError');
+const BadRequestError = require('../error/badRequest');
+const ConflictError = require('../error/conflictError');
+const AuthenticationError = require('../error/authenticationerror');
 
 const User = require('../models/user');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({}).then((users) => res
     .send(users))
-    .catch(() => res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage }));
+    .catch((err) => next(err));
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { id } = req.params;
 
   User.findById(id)
@@ -26,40 +31,21 @@ const getUserById = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect request' });
-      } if (err.name === 'DocumentNotFoundError') {
-        return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'User is not found' });
+      if (err.name === 'DocumentNotFoundError') {
+        return next(new NotFoundError('Пользователь с таким Id не найден'));
       }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
+      return next(err);
     });
 };
 
-const getCurrentUser = (req, res) => {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startsWith('Bearer')) {
-    res.status(401).send({ message: 'Необходима авторизация' });
-  }
-
-  const jwt = authorization.replace('Bearer ', '');
-
-  let payload;
-
-  try {
-    payload = jsonwebtoken.verify(jwt, JWT_SECRET);
-  } catch (err) {
-    res.status(401).send({ message: 'Необходима авторизация' });
-  }
-
-  User.findById(payload._id)
-    .orFail(() => res.status(404)
-      .send({ message: 'Пользователь не найден' }))
-    .then((users) => res.send(users))
-    .catch((err) => console.log(err));
+const getCurrentUser = (req, res, next) => {
+  User.findById(req, res, next)
+    .orFail(new NotFoundError('Такого пользователя не существует'))
+    .then((user) => res.send(user))
+    .catch((err) => next(err));
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -80,19 +66,18 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        res.status(409).send({ message: 'Пользователь с такими данными уже существует' });
+        return next(new ConflictError('Пользователь с таким ID существует'));
       } if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect user data' });
+        return next(new BadRequestError('Неверная информация пользователя'));
       }
-      // return next(err);
-      return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
+      return next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error('Неправильные почта или пароль'));
@@ -103,19 +88,15 @@ const login = (req, res) => {
     .then((user) => {
       const matched = bcrypt.compare(password, user.password);
       if (!matched) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        return Promise.reject(new AuthenticationError('Неправильные почта или пароль'));
       }
       const token = jsonwebtoken.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      console.log(JWT_SECRET);
-      // res
-      //   .cookie('token', token, {
-      //     httpOnly: true,
-      //   });
       res.send({ user, token });
-    }).catch((err) => { res.status(401).send({ message: err.message }); });
+    })
+    .catch((err) => next(err));
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
@@ -124,17 +105,14 @@ const updateProfile = (req, res) => {
     { new: true, runValidators: true },
   ).orFail().then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
-      }
       if (err.name === 'DocumentNotFoundError') {
-        return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'User is not found' });
+        return next(new NotFoundError('Такого пользователя не существует'));
       }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
+      return next(err);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -142,12 +120,9 @@ const updateAvatar = (req, res) => {
     { new: true, runValidators: true },
   ).orFail().then((user) => res.send({ data: user })).catch((err) => {
     if (err.name === 'CastError') {
-      return res.status(ERROR_CODE_INCORRECT_DATA).send({ message: 'Incorrect profile data' });
+      return next(new BadRequestError('Такого пользователя не существует'));
     }
-    if (err.name === 'DocumentNotFoundError') {
-      return res.status(ERROR_CODE_NOT_FOUND).send({ message: 'User is not found' });
-    }
-    return res.status(ERROR_CODE_DEFAULT).send({ message: defaultErrorMessage });
+    return next(err);
   });
 };
 
