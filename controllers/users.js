@@ -2,12 +2,6 @@ const jsonwebtoken = require('jsonwebtoken');
 
 const { JWT_SECRET } = process.env;
 const bcrypt = require('bcrypt');
-// const {
-//   ERROR_CODE_INCORRECT_DATA,
-//   ERROR_CODE_NOT_FOUND,
-//   ERROR_CODE_DEFAULT,
-//   defaultErrorMessage,
-// } = require('../utils/utils');
 
 const NotFoundError = require('../error/notFoundError');
 const BadRequestError = require('../error/badRequest');
