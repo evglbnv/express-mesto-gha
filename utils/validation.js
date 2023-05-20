@@ -13,7 +13,7 @@ module.exports.validationSignUp = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string.pattern(LINK_REGEXP),
+    avatar: Joi.string().pattern(LINK_REGEXP),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -34,7 +34,7 @@ module.exports.validationUpdateProfile = celebrate({
 
 module.exports.validationUpdateAvatar = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required.pattern(LINK_REGEXP),
+    avatar: Joi.string().required().pattern(LINK_REGEXP),
   }),
 });
 
