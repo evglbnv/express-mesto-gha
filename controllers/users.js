@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const jsonwebtoken = require('jsonwebtoken');
 
 const { JWT_SECRET } = process.env;
@@ -80,8 +81,7 @@ const login = (req, res, next) => {
       const matched = bcrypt.compare(password, user.password);
       if (!matched) {
         return Promise.reject(new AuthenticationError('Неправильные почта или пароль'));
-      }
-      const token = jsonwebtoken.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      } const token = jsonwebtoken.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.send({ user, token });
     })
     .catch((err) => next(err));
