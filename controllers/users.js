@@ -20,15 +20,15 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail(new NotFoundError('Такого пользователя не существует'))
     .then((user) => {
-      res.status(200).send({data: user});
+      res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
-      };
-    })
+      }
+    });
 };
 
 const getCurrentUser = (req, res, next) => {
